@@ -14,7 +14,7 @@ jobs:
       CCACHE_HARDLINK: "true"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: false
@@ -61,21 +61,33 @@ jobs:
           key: ccache
           restore-keys: ccache
 
-      - name: Setup Android SDK Tools
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: ''
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0" \
+            "cmake;3.22.1" \
+            "ndk;27.2.12479018"
 
       - name: Prepare Environment
         run: |
           echo "Removing large packages"
-
-          sudo apt-get update
 
           sudo apt-get remove -y '^llvm-.*' || true
           sudo apt-get remove -y 'php.*' || true
           sudo apt-get remove -y '^mongodb-.*' || true
           sudo apt-get remove -y '^mysql-.*' || true
           sudo apt-get remove -y azure-cli firefox mono-devel libgl1-mesa-dri || true
-          sudo apt-get autoremove -y
+
+          sudo apt-get autoremove -y || true
           sudo apt-get clean
 
           echo "Removing large directories"
