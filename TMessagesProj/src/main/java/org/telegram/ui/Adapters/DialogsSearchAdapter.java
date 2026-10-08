@@ -1,11 +1,3 @@
-/*
- * This is the source code of Telegram for Android v. 5.x.x.
- * It is licensed under GNU GPL v. 2 or later.
- * You should have received a copy of the license in this archive (see LICENSE).
- *
- * Copyright Nikolai Kudashov, 2013-2018.
- */
-
 package org.telegram.ui.Adapters;
 
 import android.content.Context;
@@ -571,13 +563,13 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
 
     private boolean resentSearchAvailable() {
         return (
-            dialogsType != DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_CHANNELS_ONLY &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_GROUPS_ONLY &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_BOT_SHARE &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS &&
-            dialogsType != DialogsActivity.DIALOGS_TYPE_BOT_REQUEST_PEER
+                dialogsType != DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_CHANNELS_ONLY &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_GROUPS_ONLY &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_BOT_SHARE &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS &&
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_BOT_REQUEST_PEER
         );
     }
 
@@ -828,21 +820,6 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
             ArrayList<ContactsController.Contact> contacts = new ArrayList<>();
 
             MessagesStorage.getInstance(currentAccount).localSearch(dialogsType, q, resultArray, resultArrayNames, encUsers, filterDialogIds, -1);
-//            if (allContacts == null) {
-//                allContacts = new ArrayList<>();
-//                for (ContactsController.Contact contact : ContactsController.getInstance(currentAccount).phoneBookContacts) {
-//                    ContactEntry contactEntry = new ContactEntry();
-//                    contactEntry.contact = contact;
-//                    contactEntry.q1 = (contact.first_name + " " + contact.last_name).toLowerCase();
-//                    contactEntry.q2 = (contact.last_name + " " + contact.first_name).toLowerCase();
-//                    allContacts.add(contactEntry);
-//                }
-//            }
-//            for (int i = 0; i < allContacts.size(); i++) {
-//                if (allContacts.get(i).q1.toLowerCase().contains(q) || allContacts.get(i).q1.toLowerCase().contains(q)) {
-//                    contacts.add(allContacts.get(i).contact);
-//                }
-//            }
             updateSearchResults(resultArray, resultArrayNames, encUsers, contacts, searchId);
             FiltersView.fillTipDates(q, localTipDates);
             localTipArchive = false;
@@ -858,7 +835,7 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
     }
 
 
-    private void updateSearchResults(final ArrayList<Object> result, final ArrayList<CharSequence> names, final ArrayList<TLRPC.User> encUsers,  final ArrayList<ContactsController.Contact> contacts, final int searchId) {
+    private void updateSearchResults(final ArrayList<Object> result, final ArrayList<CharSequence> names, final ArrayList<TLRPC.User> encUsers, final ArrayList<ContactsController.Contact> contacts, final int searchId) {
         AndroidUtilities.runOnUIThread(() -> {
             waitingResponseCount--;
             if (searchId != lastSearchId) {
@@ -873,9 +850,22 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
             }
             searchWas = true;
             final int recentCount = filtered2RecentSearchObjects.size();
-            for (int a = 0; a < result.size(); a++) {
+
+            for (int a = result.size() - 1; a >= 0; a--) {
                 Object obj = result.get(a);
+
+                if (shouldHideSearchObject(obj)) {
+                    result.remove(a);
+
+                    if (a < names.size()) {
+                        names.remove(a);
+                    }
+
+                    continue;
+                }
+
                 long dialogId = 0;
+
                 if (obj instanceof TLRPC.User) {
                     TLRPC.User user = (TLRPC.User) obj;
                     MessagesController.getInstance(currentAccount).putUser(user, true);
@@ -924,15 +914,15 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                     }
                     if (foundInRecent) {
                         result.remove(a);
-                        names.remove(a);
-                        a--;
+                        if (a < names.size()) {
+                            names.remove(a);
+                        }
                     }
                 }
             }
             MessagesController.getInstance(currentAccount).putUsers(encUsers, true);
             searchResult = result;
             searchResultNames = names;
-         //   searchContacts = contacts;
             searchAdapterHelper.mergeResults(searchResult, filtered2RecentSearchObjects);
             notifyDataSetChanged();
             if (delegate != null) {
@@ -984,17 +974,17 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
             searchAdapterHelper.mergeResults(null, null);
             if (dialogsType != DialogsActivity.DIALOGS_TYPE_BOT_REQUEST_PEER) {
                 searchAdapterHelper.queryServerSearch(
-                    null,
-                    true,
-                    true,
-                    dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
-                    dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
-                    dialogsType == DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO || dialogsType == DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
-                    0,
-                    dialogsType == DialogsActivity.DIALOGS_TYPE_DEFAULT,
-                    0,
-                    0,
-                    delegate != null ? delegate.getSearchForumDialogId() : 0
+                        null,
+                        true,
+                        true,
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
+                        dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
+                        dialogsType == DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO || dialogsType == DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
+                        0,
+                        dialogsType == DialogsActivity.DIALOGS_TYPE_DEFAULT,
+                        0,
+                        0,
+                        delegate != null ? delegate.getSearchForumDialogId() : 0
                 );
             }
             searchWas = false;
@@ -1063,17 +1053,17 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                     }
                     if (needMessagesSearch != 2 && dialogsType != DialogsActivity.DIALOGS_TYPE_GROUPS_ONLY && dialogsType != DialogsActivity.DIALOGS_TYPE_CHANNELS_ONLY) {
                         searchAdapterHelper.queryServerSearch(
-                            query,
-                            true,
-                            dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY,
-                            true,
-                            dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY && dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
-                            dialogsType == DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO || dialogsType == DialogsActivity.DIALOGS_TYPE_BOT_SHARE,
-                            0,
-                            dialogsType == DialogsActivity.DIALOGS_TYPE_DEFAULT,
-                            0,
-                            searchId,
-                            delegate != null ? delegate.getSearchForumDialogId() : 0
+                                query,
+                                true,
+                                dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY,
+                                true,
+                                dialogsType != DialogsActivity.DIALOGS_TYPE_USERS_ONLY && dialogsType != DialogsActivity.DIALOGS_TYPE_IMPORT_HISTORY_GROUPS,
+                                dialogsType == DialogsActivity.DIALOGS_TYPE_ADD_USERS_TO || dialogsType == DialogsActivity.DIALOGS_TYPE_BOT_SHARE,
+                                0,
+                                dialogsType == DialogsActivity.DIALOGS_TYPE_DEFAULT,
+                                0,
+                                searchId,
+                                delegate != null ? delegate.getSearchForumDialogId() : 0
                         );
                     } else {
                         waitingResponseCount -= 2;
@@ -1102,6 +1092,8 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
 
     @Override
     public int getItemCount() {
+        removeHiddenSearchObjects();
+
         if (waitingResponseCount == 3) {
             return 0;
         }
@@ -1251,7 +1243,6 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
         if (i > 0 && i <= searchResultMessages.size()) {
             return searchResultMessages.get(i - 1);
         }
-        // i -= messagesCount;
         return null;
     }
 
@@ -1382,7 +1373,6 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                 };
                 layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
                 horizontalListView.setLayoutManager(layoutManager);
-                //horizontalListView.setDisallowInterceptTouchEvents(true);
                 horizontalListView.setAdapter(new CategoryAdapterRecycler(mContext, currentAccount, false));
                 horizontalListView.setOnItemClickListener((view1, position) -> {
                     if (delegate != null) {
@@ -1890,7 +1880,13 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                 if (delegate != null && delegate.getSearchForumDialogId() == recentSearchObjects.get(i).did) {
                     continue;
                 }
-                filteredRecentSearchObjects.add(recentSearchObjects.get(i));
+                RecentSearchObject object = recentSearchObjects.get(i);
+
+                if (object == null || shouldHideSearchObject(object.object)) {
+                    continue;
+                }
+
+                filteredRecentSearchObjects.add(object);
             }
             return;
         }
@@ -1898,9 +1894,15 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
         final int count = recentSearchObjects.size();
         for (int i = 0; i < count; ++i) {
             RecentSearchObject obj = recentSearchObjects.get(i);
+
             if (obj == null || obj.object == null) {
                 continue;
             }
+
+            if (shouldHideSearchObject(obj.object)) {
+                continue;
+            }
+
             if (delegate != null && delegate.getSearchForumDialogId() == obj.did) {
                 continue;
             }
@@ -1915,7 +1917,7 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
                 title = ((TLRPC.ChatInvite) obj.object).title;
             }
             if (title != null && wordStartsWith(title.toLowerCase(), lowerCasedQuery) ||
-                username != null && wordStartsWith(username.toLowerCase(), lowerCasedQuery)) {
+                    username != null && wordStartsWith(username.toLowerCase(), lowerCasedQuery)) {
                 filtered2RecentSearchObjects.add(obj);
             }
             if (filtered2RecentSearchObjects.size() >= 5) {
@@ -1937,6 +1939,58 @@ public class DialogsSearchAdapter extends RecyclerListView.SelectionAdapter {
             }
         }
         return found;
+    }
+
+    private boolean shouldHideSearchObject(Object object) {
+        if (object instanceof TLRPC.User) {
+            TLRPC.User user = (TLRPC.User) object;
+
+            return user instanceof TLRPC.TL_userDeleted_old2
+                    || user instanceof TLRPC.TL_userEmpty
+                    || user.deleted;
+        }
+
+        if (object instanceof TLRPC.Chat) {
+            TLRPC.Chat chat = (TLRPC.Chat) object;
+
+            return chat instanceof TLRPC.TL_chatForbidden
+                    || chat instanceof TLRPC.TL_channelForbidden;
+        }
+
+        return false;
+    }
+
+    private void removeHiddenSearchObjects() {
+        for (int i = searchResult.size() - 1; i >= 0; i--) {
+            if (shouldHideSearchObject(searchResult.get(i))) {
+                searchResult.remove(i);
+
+                if (i < searchResultNames.size()) {
+                    searchResultNames.remove(i);
+                }
+            }
+        }
+
+        ArrayList<TLObject> localServerSearch = searchAdapterHelper.getLocalServerSearch();
+        for (int i = localServerSearch.size() - 1; i >= 0; i--) {
+            if (shouldHideSearchObject(localServerSearch.get(i))) {
+                localServerSearch.remove(i);
+            }
+        }
+
+        ArrayList<TLObject> globalSearch = searchAdapterHelper.getGlobalSearch();
+        for (int i = globalSearch.size() - 1; i >= 0; i--) {
+            if (shouldHideSearchObject(globalSearch.get(i))) {
+                globalSearch.remove(i);
+            }
+        }
+
+        ArrayList<Object> phoneSearch = searchAdapterHelper.getPhoneSearch();
+        for (int i = phoneSearch.size() - 1; i >= 0; i--) {
+            if (shouldHideSearchObject(phoneSearch.get(i))) {
+                phoneSearch.remove(i);
+            }
+        }
     }
 
     public interface OnRecentSearchLoaded {
