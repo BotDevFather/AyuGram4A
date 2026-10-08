@@ -5,7 +5,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
+    env: 
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
       CCACHE_MAXSIZE: "10G"
